@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base href="https://aol.com/aim/live">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AOL Instant Messenger</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial';
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
+        input, button {
+            font-size: 16px; /* Prevent zooming on mobile */
+        }
+
+        .modal {
+            width: 400px;
+            background-color: #ffffff;
+            border: 2px solid #000080;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal img {
+            width: 300px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+            border: 1px solid #cccccc;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #000080;
+            color: #ffffff;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .instant-messenger {
+            display: none;
+            width: 600px;
+            height: 500px;
+            background-color: #f0f0f0;
+            border: 2px solid #000080;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            resize: both;
+            overflow: hidden;
+        }
+
+        @media screen and (max-width: 600px) {
+            .instant-messenger {
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                transform: none;
+            }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            background: linear-gradient(to right, #000080, #1084d0);
+            height: 40px;
+            color: #ffffff;
+            cursor: move;
+            flex-shrink: 0;
+            min-width: 200px;
+        }
+
+        .header img {
+            height: 32px;
+        }
+
+        .header__buttons {
+            display: flex;
+        }
+
+        .header__button {
+            width: 20px;
+            height: 20px;
+            background-color: #ffffff;
+            color: #000080;
+            border: none;
+            margin-left: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 40px);
+        }
+
+        .message-list {
+            flex: 1;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #cccccc;
+            position: relative;
+            scroll-behavior: smooth;
+            word-wrap: break-word;
+            overflow-x: hidden;
+        }
+
+        .message-list__container {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .message-options {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #cccccc;
+            flex-wrap: wrap;
+        }
+
+        .message-options button {
+            padding: 2px 8px;
+            background-color: #f0f0f0;
+            color: #000000;
+            font-weight: bold;
+            border: 1px solid #cccccc;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+
+        .message-sender {
+            font-weight: bold;
+        }
+
+        .message-form {
+            display: flex;
+            padding: 10px;
+            align-items: center;
+        }
+
+        .message-form__input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #cccccc;
+            margin-right: 10px;
+            resize: vertical;
+            min-height: 40px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .message-form__button {
+            width: auto;
+            height: 40px;
+            padding: 0 8px;
+            background-color: #f0f0f0;
+            color: #000080;
+            font-weight: bold;
+            border: 1px solid #cccccc;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .message-form__button img {
+            height: 24px;
+            margin-left: 5px;
+        }
+
+        .emoji-picker {
+            position: relative;
+        }
+
+        .emoji-picker__button {
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .emoji-picker__list {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 200px;
+        }
+
+        .emoji-picker:hover .emoji-picker__list {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px;
+        }
+
+        .emoji {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .scroll-to-bottom {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 24px;
+            display: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-toggle {
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+            position: relative;
+        }
+
+        .alert-active {
+            background-color: #ff0000;
+            color: #ffffff;
+        }
+
+        .alert-toggle::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000000;
+            color: #ffffff;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .alert-toggle:hover::after {
+            opacity: 1;
+        }
+
+        .message-link {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .message-link:hover::after {
+            content: attr(data-url);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000000;
+            color: #ffffff;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .username-link {
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .username-link:hover {
+            text-decoration: underline;
+        }
+
+        ::-webkit-scrollbar {
+            width: 16px;
+            height: 16px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #f0f0f0;
+            border: 1px solid #cccccc;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #cccccc;
+            border: 1px solid #f0f0f0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #999999;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background-color: #f0f0f0;
+        }
+
+        .color-picker {
+            position: relative;
+        }
+
+        .color-picker__button {
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-picker__palette {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 5px;
+        }
+
+        .color-picker:hover .color-picker__palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px;
+        }
+
+        .color {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .volume-toggle {
+            background-color: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="modal" id="login-modal">
+    <img src="https://seeklogo.com/images/A/aol-instant-messenger-logo-B8326AC377-seeklogo.com.png" alt="AOL Instant Messenger Logo">
+    <h2>Welcome to AOL Instant Messenger</h2>
+    <form id="login-form">
+        <label for="screenname">Screen Name:</label>
+        <input type="text" id="screenname" name="screenname" required>
+        <button type="submit">Sign In</button>
+    </form>
+</div>
+
+<div class="instant-messenger" id="messenger">
+    <div class="header" id="header">
+        <img src="https://icons.iconarchive.com/icons/fatcow/farm-fresh/32/aol-messenger-icon.png" alt="AOL Instant Messenger Icon">
+        <span id="chatname"></span>
+        <div class="header__buttons">
+            <button class="header__button" id="minimize-btn">_</button>
+            <button class="header__button" id="maximize-btn">[]</button>
+            <button class="header__button" onclick="logout()">X</button>
+        </div>
+    </div>
+    <div class="message-content" id="message-content">
+        <div class="message-list">
+            <div class="message-list__container" id="message-list">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            <div class="scroll-to-bottom" id="scroll-to-bottom">↓</div>
+        </div>
+        <div class="message-options">
+            <button onclick="applyStyle('bold')"><b>B</b></button>
+            <button onclick="applyStyle('italic')"><i>I</i></button>
+            <button onclick="applyStyle('underline')"><u>U</u></button>
+            <button onclick="applyFont('Monospace')"><span style="font-family: Monospace;">M</span></button>
+            <button onclick="applyFont('Lucida')"><span style="font-family: Lucida;">L</span></button>
+            <button onclick="createLink()"><u style="color: blue;">Link</u></button>
+            <div class="color-picker">
+                <button class="color-picker__button">🎨</button>
+                <div class="color-picker__palette">
+                    <div class="color" style="background-color: #ff0000;" onclick="applyColor('#ff0000')"></div>
+                    <div class="color" style="background-color: #00ff00;" onclick="applyColor('#00ff00')"></div>
+                    <div class="color" style="background-color: #0000ff;" onclick="applyColor('#0000ff')"></div>
+                    <div class="color" style="background-color: #ffff00;" onclick="applyColor('#ffff00')"></div>
+                    <div class="color" style="background-color: #ff00ff;" onclick="applyColor('#ff00ff')"></div>
+                    <div class="color" style="background-color: #00ffff;" onclick="applyColor('#00ffff')"></div>
+                    <div class="color" style="background-color: #800000;" onclick="applyColor('#800000')"></div>
+                    <div class="color" style="background-color: #808000;" onclick="applyColor('#808000')"></div>
+                    <div class="color" style="background-color: #008000;" onclick="applyColor('#008000')"></div>
+                    <div class="color" style="background-color: #800080;" onclick="applyColor('#800080')"></div>
+                    <div class="color" style="background-color: #008080;" onclick="applyColor('#008080')"></div>
+                    <div class="color" style="background-color: #000080;" onclick="applyColor('#000080')"></div>
+                    <div class="color" style="background-color: #808080;" onclick="applyColor('#808080')"></div>
+                    <div class="color" style="background-color: #c0c0c0;" onclick="applyColor('#c0c0c0')"></div>
+                    <div class="color" style="background-color: #ffffff;" onclick="applyColor('#ffffff')"></div>
+                </div>
+            </div>
+            <div class="emoji-picker">
+                <button class="emoji-picker__button">😊</button>
+                <div class="emoji-picker__list">
+                    <span class="emoji">😀</span>
+                    <span class="emoji">😂</span>
+                    <span class="emoji">😍</span>
+                    <span class="emoji">🤔</span>
+                    <span class="emoji">🙌</span>
+                    <span class="emoji">👍</span>
+                    <span class="emoji">👎</span>
+                    <span class="emoji">🎉</span>
+                    <span class="emoji">❤️</span>
+                    <span class="emoji">🔥</span>
+                    <span class="emoji">💯</span>
+                    <span class="emoji">🎮</span>
+                    <span class="emoji">🎲</span>
+                    <span class="emoji">🏆</span>
+                    <span class="emoji">🚀</span>
+                    <span class="emoji">🌍</span>
+                    <span class="emoji">🌈</span>
+                    <span class="emoji">👽</span>
+                    <span class="emoji">🤖</span>
+                    <span class="emoji">🦄</span>
+                    <span class="emoji">🐲</span>
+                    <span class="emoji">🧙‍♂️</span>
+                    <span class="emoji">🧝‍♀️</span>
+                    <span class="emoji">🧛‍♂️</span>
+                    <span class="emoji">🧟‍♂️</span>
+                    <span class="emoji">🤡</span>
+                    <span class="emoji">👻</span>
+                    <span class="emoji">💀</span>
+                    <span class="emoji">👾</span>
+                    <span class="emoji">🤓</span>
+                    <span class="emoji">🤠</span>
+                    <span class="emoji">🥳</span>
+                    <span class="emoji">🤪</span>
+                    <span class="emoji">🤬</span>
+                    <span class="emoji">🤯</span>
+                    <span class="emoji">🤢</span>
+                    <span class="emoji">🤮</span>
+                    <span class="emoji">🤧</span>
+                    <span class="emoji">🥵</span>
+                    <span class="emoji">🥶</span>
+                    <span class="emoji">🥴</span>
+                    <span class="emoji">😵</span>
+                    <span class="emoji">🤐</span>
+                    <span class="emoji">🤫</span>
+                    <span class="emoji">🤥</span>
+                    <span class="emoji">😶</span>
+                    <span class="emoji">😐</span>
+                    <span class="emoji">😑</span>
+                    <span class="emoji">😬</span>
+                    <span class="emoji">🙄</span>
+                    <span class="emoji">😯</span>
+                    <span class="emoji">😦</span>
+                    <span class="emoji">😧</span>
+                    <span class="emoji">😮</span>
+                    <span class="emoji">😲</span>
+                    <span class="emoji">🥱</span>
+                    <span class="emoji">😴</span>
+                    <span class="emoji">🤤</span>
+                    <span class="emoji">😪</span>
+                    <span class="emoji">😵</span>
+                    <span class="emoji">🤐</span>
+                    <span class="emoji">🥴</span>
+                    <span class="emoji">🤢</span>
+                    <span class="emoji">🤮</span>
+                    <span class="emoji">🤧</span>
+                    <span class="emoji">🥵</span>
+                    <span class="emoji">🥶</span>
+                    <span class="emoji">😷</span>
+                    <span class="emoji">🤒</span>
+                    <span class="emoji">🤕</span>
+                    <span class="emoji">🤑</span>
+                    <span class="emoji">🤠</span>
+                    <span class="emoji">😈</span>
+                    <span class="emoji">👿</span>
+                    <span class="emoji">👹</span>
+                    <span class="emoji">👺</span>
+                    <span class="emoji">🤡</span>
+                    <span class="emoji">💩</span>
+                    <span class="emoji">👻</span>
+                    <span class="emoji">💀</span>
+                    <span class="emoji">☠️</span>
+                    <span class="emoji">👽</span>
+                    <span class="emoji">👾</span>
+                    <span class="emoji">🤖</span>
+                    <span class="emoji">🎃</span>
+                    <span class="emoji">😺</span>
+                    <span class="emoji">😸</span>
+                    <span class="emoji">😹</span>
+                    <span class="emoji">😻</span>
+                    <span class="emoji">😼</span>
+                    <span class="emoji">😽</span>
+                    <span class="emoji">🙀</span>
+                    <span class="emoji">😿</span>
+                    <span class="emoji">😾</span>
+                </div>
+            </div>
+            <button class="alert-toggle" id="alert-toggle" data-tooltip="Alerts On">🚩</button>
+            <button class="volume-toggle" id="volume-toggle">🔊</button>
+        </div>
+        <form class="message-form" id="message-form">
+            <div class="message-form__input" id="message-input" contenteditable="true"></div>
+            <button type="submit" class="message-form__button">
+                <img src="https://icons.iconarchive.com/icons/fatcow/farm-fresh/32/aol-messenger-icon.png" alt="AOL Instant Messenger Icon">
+                <img src="https://icons.iconarchive.com/icons/iconsmind/outline/256/Mail-Send-icon.png" alt="Send Icon">
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const loginModal = document.getElementById('login-modal');
+    const loginForm = document.getElementById('login-form');
+    const messengerContainer = document.getElementById('messenger');
+    const chatnameElement = document.getElementById('chatname');
+    const messageList = document.getElementById('message-list');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const messageContent = document.getElementById('message-content');
+    const minimizeBtn = document.getElementById('minimize-btn');
+    const maximizeBtn = document.getElementById('maximize-btn');
+    const scrollToBottomBtn = document.getElementById('scroll-to-bottom');
+    const alertToggle = document.getElementById('alert-toggle');
+    const volumeToggle = document.getElementById('volume-toggle');
+
+    let ws; // WebSocket variable
+    let screenName; // Variable to store the screen name
+    let alertActive = true; // Variable to track alert state
+    let volumeActive = true; // Variable to track volume state
+
+    const buddyInSound = new Audio('https://archive.org/download/im_20191103/BuddyIn.mp3');
+    const buddyOutSound = new Audio('https://archive.org/download/im_20191103/BuddyOut.mp3');
+    const imSound = new Audio('https://archive.org/download/im_20191103/IM.mp3');
+    const goodbyeSound = new Audio('https://archive.org/download/im_20191103/Goodbye.mp3');
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        screenName = document.getElementById('screenname').value;
+        loginModal.style.display = 'none';
+        messengerContainer.style.display = 'block';
+        chatnameElement.textContent = screenName + ' - AOL Instant Messenger';
+        initWebSocket(screenName); // Initialize WebSocket with the user's screen name
+    });
+
+    function initWebSocket(screenName) {
+        const wsUrl = 'wss://websim-server.fly.dev'; // WebSocket server URL
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function() {
+            console.log('WebSocket connected');
+            ws.send(JSON.stringify({ type: 'login', screenName })); // Send login type message
+            ws.send(JSON.stringify({ type: 'message', data: { username: screenName, message: 'Logged On.' } })); // Send "Logged On." message
+            buddyInSound.play();
+        };
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'message') {
+                addMessage(data.data.message, data.data.username); // Pass username from received data
+                if (volumeActive) {
+                    imSound.play();
+                }
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(200); // Vibrate for 200ms
+                }
+            }
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket disconnected');
+            // Handle disconnection
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket error: ' + error.message);
+            // Handle errors
+        };
+    }
+
+    // Handling the form submission to send messages
+    messageForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent the default form submission which might cause reload or double submission
+        const message = messageInput.innerHTML;
+        if (message.trim() !== '') { // Check if the message is not just empty or spaces
+            ws.send(JSON.stringify({ type: 'message', data: { username: screenName, message: sanitizeString(message) } })); // Send username and sanitized message
+            messageInput.innerHTML = ''; // Clear the input field after sending
+        }
+    });
+
+    // Handling Enter key press in the message input
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Draggable header
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    header.addEventListener('mousedown', startDragging);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('mouseleave', stopDragging);
+
+    function startDragging(e) {
+        isDragging = true;
+        dragOffsetX = e.clientX - messengerContainer.offsetLeft;
+        dragOffsetY = e.clientY - messengerContainer.offsetTop;
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+        messengerContainer.style.left = e.clientX - dragOffsetX + 'px';
+        messengerContainer.style.top = e.clientY - dragOffsetY + 'px';
+    }
+
+    function stopDragging() {
+        isDragging = false;
+    }
+
+    // Minimize and maximize buttons
+    minimizeBtn.addEventListener('click', () => {
+        messengerContainer.style.height = '40px';
+    });
+
+    maximizeBtn.addEventListener('click', () => {
+        messengerContainer.style.height = '500px';
+    });
+
+    // Emoji picker
+    const emojiPicker = document.querySelector('.emoji-picker');
+    const emojiList = document.querySelector('.emoji-picker__list');
+    const emojiButton = document.querySelector('.emoji-picker__button');
+
+    emojiButton.addEventListener('click', () => {
+        emojiList.classList.toggle('show');
+    });
+
+    emojiList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('emoji')) {
+            insertAtCursor(messageInput, e.target.textContent);
+            emojiList.classList.remove('show');
+            messageInput.focus();
+        }
+    });
+
+    // Color picker
+    const colorPicker = document.querySelector('.color-picker');
+    const colorPalette = document.querySelector('.color-picker__palette');
+    const colorButton = document.querySelector('.color-picker__button');
+
+    colorButton.addEventListener('click', () => {
+        colorPalette.classList.toggle('show');
+    });
+
+    function applyColor(color) {
+        document.execCommand('foreColor', false, color);
+        messageInput.focus();
+    }
+
+    const userColors = {};
+
+    function getUsernameColor(username) {
+        if (userColors[username]) {
+            return userColors[username];
+        } else {
+            // Create a hash from the username
+            let hash = 0;
+            for (let i = 0; i < username.length; i++) {
+                hash = 31 * hash + username.charCodeAt(i);
+            }
+            // Convert the hash into a color
+            const color = `hsl(${hash % 360}, 70%, 50%)`;
+            userColors[username] = color;
+            return color;
+        }
+    }
+
+    function addMessage(message, sender) {
+        const messageElement = document.createElement('div');
+        const processedMessage = processMessage(message);
+        if (sender === screenName) {
+            messageElement.innerHTML = `<span class="message-sender" style="color: ${getUsernameColor(sender)};">${sender}</span>: ${processedMessage}`;
+        } else {
+            const color = getUsernameColor(sender);
+            messageElement.innerHTML = `<span class="message-sender" style="color: ${color};">${sender}</span>: ${processedMessage}`;
+        }
+        messageList.appendChild(messageElement);
+        messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    function processMessage(message) {
+        // Process links
+        const linkRegex = /(https?:\/\/[^\s]+)/g;
+        message = message.replace(linkRegex, '<a href="$1" target="_blank" class="message-link">link</a>');
+
+        // Process @mentions
+        const mentionRegex = /@(\w+)/g;
+        message = message.replace(mentionRegex, '<a href="https://aol.com/aim/?profile=$1" target="_blank" class="username-link" style="color: ' + getUsernameColor('$1') + ';">@$1</a>');
+
+        // Process formatting
+        message = message.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        message = message.replace(/\*(.*?)\*/g, '<i>$1</i>');
+        message = message.replace(/__(.*?)__/g, '<u>$1</u>');
+
+        return message;
+    }
+
+    // Logout functionality
+    function logout() {
+        if (ws) {
+            ws.send(JSON.stringify({ type: 'message', data: { username: screenName, message: 'Logging Off...' } }));
+            ws.close(); // Close the WebSocket connection
+            buddyOutSound.play();
+            setTimeout(() => {
+                goodbyeSound.play();
+                window.close(); // Close the browser window
+            }, 1000);
+        }
+    }
+
+    // Formatting buttons
+    function applyStyle(style) {
+        document.execCommand(style, false, null);
+        messageInput.focus();
+    }
+
+    function applyFont(font) {
+        document.execCommand('fontName', false, font);
+        messageInput.focus();
+    }
+
+    function createLink() {
+        const url = prompt("Enter the URL:");
+        if (url) {
+            document.execCommand('insertHTML', false, '<a href="' + url + '" target="_blank" class="message-link">link</a>');
+        }
+        messageInput.focus();
+    }
+
+    // Scroll to bottom button
+    scrollToBottomBtn.addEventListener('click', () => {
+        messageList.scrollTop = messageList.scrollHeight;
+    });
+
+    // Show scroll to bottom button when scrolled up
+    messageList.addEventListener('scroll', () => {
+        const scrollToBottomVisible = messageList.scrollTop < messageList.scrollHeight - messageList.clientHeight - 100;
+        scrollToBottomBtn.style.display = scrollToBottomVisible ? 'flex' : 'none';
+    });
+
+    // Detect username mention and change header color
+    function checkUsernameMention(message) {
+        if (message.includes('@' + screenName)) {
+            if (alertActive) {
+                header.style.animation = 'blink 1s infinite';
+            }
+        }
+    }
+
+    // Override addMessage function to include username mention check
+    const originalAddMessage = addMessage;
+    addMessage = function(message, sender) {
+        checkUsernameMention(message);
+        originalAddMessage(message, sender);
+    };
+
+    // Using MutationObserver to handle dynamic content changes
+    const observer = new MutationObserver(() => {
+        if (messageList.scrollHeight - messageList.clientHeight - messageList.scrollTop < 100) {
+            messageList.scrollTop = messageList.scrollHeight; // Keeps the scroll at the bottom unless user has scrolled up significantly
+        }
+    });
+
+    observer.observe(messageList, { childList: true, subtree: true });
+
+    // Function to sanitize messages and prevent unwanted renderings
+    function sanitizeString(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Alert toggle button
+    alertToggle.addEventListener('click', () => {
+        alertActive = !alertActive;
+        if (alertActive) {
+            alertToggle.classList.add('alert-active');
+            alertToggle.setAttribute('data-tooltip', 'Alerts On');
+        } else {
+            alertToggle.classList.remove('alert-active');
+            alertToggle.setAttribute('data-tooltip', 'Alerts Off');
+            header.style.animation = 'none';
+        }
+    });
+
+    // Volume toggle button
+    volumeToggle.addEventListener('click', () => {
+        volumeActive = !volumeActive;
+        if (volumeActive) {
+            volumeToggle.textContent = '🔊';
+        } else {
+            volumeToggle.textContent = '🔇';
+        }
+    });
+
+    // Insert text at the current cursor position in a contenteditable div
+    function insertAtCursor(element, text) {
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    window.addEventListener('beforeunload', () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'message', data: { username: screenName, message: 'Logging Off...' } }));
+            ws.close();
+        }
+    });
+
+    // Event listener to stop alert when user interacts with the app
+    document.addEventListener('click', () => {
+        if (alertActive) {
+            header.style.animation = 'none';
+        }
+    });
+</script>
+</body>
+</html>
